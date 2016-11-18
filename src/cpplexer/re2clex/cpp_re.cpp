@@ -60,6 +60,7 @@
 #define YYCURSOR  cursor
 #define YYLIMIT   limit
 #define YYMARKER  marker
+#define YYCTXMARKER ctxmarker
 #define YYFILL(n)                                                             \
     {                                                                         \
         cursor = uchar_wrapper(fill(s, cursor), cursor.column);               \
@@ -405,6 +406,7 @@ boost::wave::token_id scan(Scanner *s)
 
     uchar_wrapper cursor (s->tok = s->cur, s->column = s->curr_column);
     uchar_wrapper marker (s->ptr);
+    uchar_wrapper ctxmarker (s->ptr);
     uchar_wrapper limit (s->lim);
 
 // include the correct Re2C token definition rules
@@ -428,6 +430,7 @@ boost::wave::token_id scan(Scanner *s)
 #undef YYCURSOR
 #undef YYLIMIT
 #undef YYMARKER
+#undef YYCTXMARKER
 #undef YYFILL
 
 // the suffix header occurs after all of the code
