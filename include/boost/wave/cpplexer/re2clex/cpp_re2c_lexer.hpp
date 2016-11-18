@@ -122,6 +122,9 @@ lexer<IteratorT, PositionT, TokenT>::lexer(IteratorT const &first,
   , cache()
 #endif
 {
+    // This code treats the supplied iterators as an array
+    BOOST_CONCEPT_ASSERT((RandomAccessIterator<IteratorT>));
+
     using namespace std;        // some systems have memset in std
     memset(&scanner, '\0', sizeof(Scanner));
     scanner.eol_offsets = aq_create();
