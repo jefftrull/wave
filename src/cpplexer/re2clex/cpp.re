@@ -348,7 +348,7 @@ NonDigit            = [a-zA-Z_$] | UniversalChar;
         // flag the error
         BOOST_WAVE_UPDATE_CURSOR();     // adjust the input cursor
         (*s->error_proc)(s, lexing_exception::generic_lexing_error,
-            "invalid character '\\%03o' in input stream", *--YYCURSOR);
+            "invalid character '\\%03o' in input stream", yych);
     }
 */
 
@@ -367,17 +367,20 @@ ccomment:
 
     any            { goto ccomment; }
 
-    "\000"
+    "" / "\000"
     {
-        if(cursor == s->eof) 
+
+        if(++(YYCURSOR) == s->eof)
         {
+            // point to EOF
+            ++YYCURSOR;
             BOOST_WAVE_UPDATE_CURSOR();   // adjust the input cursor
             (*s->error_proc)(s, lexing_exception::generic_lexing_warning, 
                 "Unterminated 'C' style comment");
         }
         else
         {
-            --YYCURSOR;                   // next call returns T_EOF
+                                          // next call returns T_EOF
             BOOST_WAVE_UPDATE_CURSOR();   // adjust the input cursor
             (*s->error_proc)(s, lexing_exception::generic_lexing_error,
                 "invalid character: '\\000' in input stream");
@@ -389,7 +392,7 @@ ccomment:
         // flag the error
         BOOST_WAVE_UPDATE_CURSOR();     // adjust the input cursor
         (*s->error_proc)(s, lexing_exception::generic_lexing_error,
-            "invalid character '\\%03o' in input stream", *--YYCURSOR);
+            "invalid character '\\%03o' in input stream", yych);
     }
 */
 
@@ -406,17 +409,16 @@ cppcomment:
 
     any            { goto cppcomment; }
 
-    "\000"
+    "" / "\000"
     {
-        if (s->eof && cursor != s->eof) 
+        if (s->eof && ++(YYCURSOR) != s->eof)
         {
-            --YYCURSOR;                     // next call returns T_EOF
+                                            // next call returns T_EOF
             BOOST_WAVE_UPDATE_CURSOR();     // adjust the input cursor
             (*s->error_proc)(s, lexing_exception::generic_lexing_error,
                 "invalid character '\\000' in input stream");
         }
 
-        --YYCURSOR;                         // next call returns T_EOF
         if (!s->single_line_only)
         {
             BOOST_WAVE_UPDATE_CURSOR();     // adjust the input cursor
@@ -431,7 +433,7 @@ cppcomment:
         // flag the error
         BOOST_WAVE_UPDATE_CURSOR();     // adjust the input cursor
         (*s->error_proc)(s, lexing_exception::generic_lexing_error,
-            "invalid character '\\%03o' in input stream", *--YYCURSOR);
+            "invalid character '\\%03o' in input stream", yych);
     }
 */
 
