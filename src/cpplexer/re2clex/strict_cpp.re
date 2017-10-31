@@ -161,24 +161,24 @@ NonDigit           = [a-zA-Z_] | UniversalChar;
     ":"             { BOOST_WAVE_RET(T_COLON); }
     "..."           { BOOST_WAVE_RET(T_ELLIPSIS); }
     "?"             { BOOST_WAVE_RET(T_QUESTION_MARK); }
-    "::"
+    ":" / ":"
         {
             if (s->act_in_c99_mode) {
-                --YYCURSOR;
                 BOOST_WAVE_RET(T_COLON);
             }
             else {
+                ++YYCURSOR;
                 BOOST_WAVE_RET(T_COLON_COLON);
             }
         }
     "."             { BOOST_WAVE_RET(T_DOT); }
-    ".*"
+    "." / "*"
         {
             if (s->act_in_c99_mode) {
-                --YYCURSOR;
                 BOOST_WAVE_RET(T_DOT);
             }
             else {
+                ++YYCURSOR;
                 BOOST_WAVE_RET(T_DOTSTAR);
             }
         }
@@ -235,13 +235,13 @@ NonDigit           = [a-zA-Z_] | UniversalChar;
     "++"            { BOOST_WAVE_RET(T_PLUSPLUS); }
     "--"            { BOOST_WAVE_RET(T_MINUSMINUS); }
     ","             { BOOST_WAVE_RET(T_COMMA); }
-    "->*"
+    "->" / "*"
         {
             if (s->act_in_c99_mode) {
-                --YYCURSOR;
                 BOOST_WAVE_RET(T_ARROW);
             }
             else {
+                ++YYCURSOR;
                 BOOST_WAVE_RET(T_ARROWSTAR);
             }
         }
@@ -254,35 +254,39 @@ NonDigit           = [a-zA-Z_] | UniversalChar;
     "L"? (["] (EscapeSequence | UniversalChar | any\[\n\r\\"])* ["])
         { BOOST_WAVE_RET(T_STRINGLIT); }
 
-    "L"? "R" ["]
+    "L"? "R" / ["]
         {
-            if (s->act_in_cpp0x_mode)
+            if (s->act_in_cpp0x_mode) {
+                ++YYCURSOR;
                 goto extrawstringlit;
-            --YYCURSOR;
+            }
             BOOST_WAVE_RET(T_IDENTIFIER);
         }
 
-    [uU] [']
+    [uU] / [']
         {
-            if (s->act_in_cpp0x_mode)
+            if (s->act_in_cpp0x_mode) {
+                ++YYCURSOR;
                 goto extcharlit;
-            --YYCURSOR;
+            }
             BOOST_WAVE_RET(T_IDENTIFIER);
         }
 
-    ([uU] | "u8") ["]
+    ([uU] | "u8") / ["]
         {
-            if (s->act_in_cpp0x_mode)
+            if (s->act_in_cpp0x_mode) {
+                ++YYCURSOR;
                 goto extstringlit;
-            --YYCURSOR;
+            }
             BOOST_WAVE_RET(T_IDENTIFIER);
         }
 
-    ([uU] | "u8") "R" ["]
+    ([uU] | "u8") "R" / ["]
         {
-            if (s->act_in_cpp0x_mode)
+            if (s->act_in_cpp0x_mode) {
+                ++YYCURSOR;
                 goto extrawstringlit;
-            --YYCURSOR;
+            }
             BOOST_WAVE_RET(T_IDENTIFIER);
         }
 
@@ -343,7 +347,7 @@ NonDigit           = [a-zA-Z_] | UniversalChar;
         // flag the error
         BOOST_WAVE_UPDATE_CURSOR();     // adjust the input cursor
         (*s->error_proc)(s, lexing_exception::generic_lexing_error,
-            "invalid character '\\%03o' in input stream", *--YYCURSOR);
+            "invalid character '\\%03o' in input stream", yych);
     }
 */
 
@@ -362,17 +366,18 @@ ccomment:
 
     any            { goto ccomment; }
 
-    "\000"
+    "" / "\000"
     {
-        if(cursor == s->eof)
+        if(++(YYCURSOR) == s->eof)
         {
+            ++YYCURSOR;
             BOOST_WAVE_UPDATE_CURSOR();   // adjust the input cursor
             (*s->error_proc)(s, lexing_exception::generic_lexing_warning,
                 "unterminated 'C' style comment");
         }
         else
         {
-            --YYCURSOR;                   // next call returns T_EOF
+                                          // next call returns T_EOF
             BOOST_WAVE_UPDATE_CURSOR();   // adjust the input cursor
             (*s->error_proc)(s, lexing_exception::generic_lexing_error,
                 "invalid character: '\\000' in input stream");
@@ -384,7 +389,7 @@ ccomment:
         // flag the error
         BOOST_WAVE_UPDATE_CURSOR();   // adjust the input cursor
         (*s->error_proc)(s, lexing_exception::generic_lexing_error,
-            "invalid character '\\%03o' in input stream", *--YYCURSOR);
+            "invalid character '\\%03o' in input stream", yych);
     }
 */
 
@@ -401,17 +406,16 @@ cppcomment:
 
     any            { goto cppcomment; }
 
-    "\000"
+    "" / "\000"
     {
-        if (s->eof && cursor != s->eof)
+        if (s->eof && ++(YYCURSOR) != s->eof)
         {
-            --YYCURSOR;                     // next call returns T_EOF
+                                            // next call returns T_EOF
             BOOST_WAVE_UPDATE_CURSOR();     // adjust the input cursor
             (*s->error_proc)(s, lexing_exception::generic_lexing_error,
                 "invalid character '\\000' in input stream");
         }
 
-        --YYCURSOR;                         // next call returns T_EOF
         if (!s->single_line_only)
         {
             BOOST_WAVE_UPDATE_CURSOR();     // adjust the input cursor
@@ -426,7 +430,7 @@ cppcomment:
         // flag the error
         BOOST_WAVE_UPDATE_CURSOR();     // adjust the input cursor
         (*s->error_proc)(s, lexing_exception::generic_lexing_error,
-            "invalid character '\\%03o' in input stream", *--YYCURSOR);
+            "invalid character '\\%03o' in input stream", yych);
     }
 */
 
