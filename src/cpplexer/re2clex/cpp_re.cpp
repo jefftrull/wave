@@ -61,6 +61,13 @@
 #define YYLIMIT   limit
 #define YYMARKER  marker
 #define YYCTXMARKER ctxmarker
+#define YYLESSTHAN(n) (std::distance(YYCURSOR, YYLIMIT) < n)
+#define YYPEEK()  *YYCURSOR
+#define YYSKIP()  ++YYCURSOR
+#define YYBACKUP() YYMARKER = YYCURSOR
+#define YYRESTORE() YYCURSOR = YYMARKER
+#define YYBACKUPCTX() YYCTXMARKER = YYCURSOR
+#define YYRESTORECTX() YYCURSOR = YYCTXMARKER
 #define YYFILL(n)                                                             \
     {                                                                         \
         cursor = uchar_wrapper(fill(s, cursor), cursor.column);               \
@@ -361,6 +368,13 @@ uchar *fill(Scanner *s, uchar *cursor)
 //  Special wrapper class holding the current cursor position
 struct uchar_wrapper
 {
+    // traits
+    typedef std::ptrdiff_t                  difference_type;
+    typedef uchar                           value_type;
+    typedef uchar*                          pointer;
+    typedef uchar&                          reference;
+    typedef std::random_access_iterator_tag iterator_category;
+
     uchar_wrapper (uchar *base_cursor, std::size_t column = 1)
     :   base_cursor(base_cursor), column(column)
     {}
