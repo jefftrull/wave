@@ -167,3 +167,12 @@ test-suite wave
 
     ;
 
+# Tests for utility classes
+unit-test padded_range
+    # sources
+    :
+        ../testlexers/test_padded_range.cpp
+        /boost/wave//boost_wave
+    # requirements
+    :
+    ;
