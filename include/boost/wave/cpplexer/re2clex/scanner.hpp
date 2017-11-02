@@ -26,13 +26,12 @@ namespace wave {
 namespace cpplexer {
 namespace re2clex {
 
-struct Scanner;
-typedef unsigned char uchar;
-typedef int (* ReportErrorProc)(struct Scanner const *, int errorcode,
-    char const *, ...);
+template<typename Iterator> struct Scanner;
 
+template<typename Iterator>
 struct Scanner {
-
+    typedef int (* ReportErrorProc)(struct Scanner const *, int errorcode,
+                                    char const *, ...);
     Scanner()
         : first(0), act(0), last(0), bot(0), top(0), eof(0),
           tok(0), ptr(0), cur(0), lim(0),
@@ -42,19 +41,19 @@ struct Scanner {
           detect_pp_numbers(false), enable_import_keyword(false),
           single_line_only(false), act_in_cpp0x_mode(false) {}
 
-    uchar* first;   /* start of input buffer */
-    uchar* act;     /* act position of input buffer */
-    uchar* last;    /* end (one past last char) of input buffer */
-    uchar* bot;     /* beginning of the current buffer */
-    uchar* top;     /* top of the current buffer */
-    uchar* eof;     /* when we read in the last buffer, will point 1 past the
-                       end of the file, otherwise 0 */
-    uchar* tok;     /* points to the beginning of the current token */
-    uchar* ptr;     /* used for YYMARKER - saves backtracking info */
-    uchar* cur;     /* saves the cursor (maybe is redundant with tok?) */
-    uchar* lim;     /* used for YYLIMIT - points to the end of the buffer */
-                    /* (lim == top) except for the last buffer, it points to
-                       the end of the input (lim == eof - 1) */
+    Iterator first;   /* start of input buffer */
+    Iterator act;     /* act position of input buffer */
+    Iterator last;    /* end (one past last char) of input buffer */
+    Iterator bot;     /* beginning of the current buffer */
+    Iterator top;     /* top of the current buffer */
+    Iterator eof;     /* when we read in the last buffer, will point 1 past the
+                         end of the file, otherwise 0 */
+    Iterator tok;     /* points to the beginning of the current token */
+    Iterator ptr;     /* used for YYMARKER - saves backtracking info */
+    Iterator cur;     /* saves the cursor (maybe is redundant with tok?) */
+    Iterator lim;     /* used for YYLIMIT - points to the end of the buffer */
+                      /* (lim == top) except for the last buffer, it points to
+                         the end of the input (lim == eof - 1) */
     std::size_t line;           /* current line being lex'ed */
     std::size_t column;         /* current token start column position */
     std::size_t curr_column;    /* current column position */

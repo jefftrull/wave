@@ -65,6 +65,7 @@ template <typename IteratorT,
 class lexer
 {
 public:
+    typedef unsigned char uchar;
     typedef TokenT token_type;
     typedef typename token_type::string_type  string_type;
 
@@ -89,12 +90,12 @@ public:
 #endif
 
 // error reporting from the re2c generated lexer
-    static int report_error(Scanner const* s, int code, char const *, ...);
+    static int report_error(Scanner<uchar*> const* s, int code, char const *, ...);
 
 private:
     static char const *tok_names[];
 
-    Scanner scanner;
+    Scanner<uchar*> scanner;
     string_type filename;
     string_type value;
     bool at_eof;
@@ -306,7 +307,7 @@ lexer<IteratorT, PositionT, TokenT>::get(TokenT& result)
 
 template <typename IteratorT, typename PositionT, typename TokenT>
 inline int
-lexer<IteratorT, PositionT, TokenT>::report_error(Scanner const *s, int errcode,
+lexer<IteratorT, PositionT, TokenT>::report_error(Scanner<uchar*> const *s, int errcode,
     char const *msg, ...)
 {
     BOOST_ASSERT(0 != s);

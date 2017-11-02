@@ -360,7 +360,7 @@ ccomment:
     {
         /*if(cursor == s->eof) BOOST_WAVE_RET(T_EOF);*/
         /*s->tok = cursor; */
-        s->line += count_backslash_newlines(s, cursor) +1;
+        s->line += count_backslash_newlines<Iterator>(s, cursor) +1;
         cursor.column = 1;
         goto ccomment;
     }
@@ -517,7 +517,7 @@ extrawstringlit:
 
         Newline
         {
-            s->line += count_backslash_newlines(s, cursor) +1;
+            s->line += count_backslash_newlines<Iterator>(s, cursor) +1;
             cursor.column = 1;
             goto extrawstringlit;
         }

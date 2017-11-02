@@ -33,11 +33,12 @@ namespace wave {
 namespace cpplexer {
 namespace re2clex {
 
-struct Scanner;
+template<typename Iterator> struct Scanner;
 
 ///////////////////////////////////////////////////////////////////////////////
 //  The scanner function to call whenever a new token is requested
-BOOST_WAVE_DECL boost::wave::token_id scan(Scanner *s);
+template<typename Iterator>
+BOOST_WAVE_DECL boost::wave::token_id scan(Scanner<Iterator> *s);
 
 ///////////////////////////////////////////////////////////////////////////////
 }   // namespace re2clex

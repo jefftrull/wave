@@ -56,7 +56,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 #define BOOST_WAVE_BSIZE     196608
 
-#define YYCTYPE   uchar
 #define YYCURSOR  cursor
 #define YYLIMIT   limit
 #define YYMARKER  marker
@@ -70,7 +69,7 @@
 #define YYRESTORECTX() YYCURSOR = YYCTXMARKER
 #define YYFILL(n)                                                             \
     {                                                                         \
-        cursor = uchar_wrapper(fill(s, cursor), cursor.column);               \
+        cursor = uchar_wrapper(fill<unsigned char *>(s, cursor), cursor.column);               \
         limit = uchar_wrapper (s->lim);                                       \
     }                                                                         \
     /**/
@@ -80,7 +79,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 #define BOOST_WAVE_UPDATE_CURSOR()                                            \
     {                                                                         \
-        s->line += count_backslash_newlines(s, cursor);                       \
+        s->line += count_backslash_newlines<unsigned char *>(s, cursor);                       \
         s->curr_column = cursor.column;                                       \
         s->cur = cursor;                                                      \
         s->lim = limit;                                                       \
@@ -106,7 +105,8 @@ namespace re2clex {
 
 #define RE2C_ASSERT BOOST_ASSERT
 
-int get_one_char(Scanner *s)
+template<typename Iterator>
+int get_one_char(Scanner<Iterator> *s)
 {
     if (0 != s->act) {
         RE2C_ASSERT(s->first != 0 && s->last != 0);
@@ -117,7 +117,8 @@ int get_one_char(Scanner *s)
     return -1;
 }
 
-std::ptrdiff_t rewind_stream (Scanner *s, int cnt)
+template<typename Iterator>
+std::ptrdiff_t rewind_stream (Scanner<Iterator> *s, int cnt)
 {
     if (0 != s->act) {
         RE2C_ASSERT(s->first != 0 && s->last != 0);
@@ -128,7 +129,8 @@ std::ptrdiff_t rewind_stream (Scanner *s, int cnt)
     return 0;
 }
 
-std::size_t get_first_eol_offset(Scanner* s)
+template<typename Iterator>
+std::size_t get_first_eol_offset(Scanner<Iterator>* s)
 {
     if (!AQ_EMPTY(s->eol_offsets))
     {
@@ -140,7 +142,8 @@ std::size_t get_first_eol_offset(Scanner* s)
     }
 }
 
-void adjust_eol_offsets(Scanner* s, std::size_t adjustment)
+template<typename Iterator>
+void adjust_eol_offsets(Scanner<Iterator>* s, std::size_t adjustment)
 {
     aq_queue q;
     std::size_t i;
@@ -170,7 +173,8 @@ void adjust_eol_offsets(Scanner* s, std::size_t adjustment)
         q->queue[i] -= adjustment;
 }
 
-int count_backslash_newlines(Scanner *s, uchar *cursor)
+template<typename Iterator>
+int count_backslash_newlines(Scanner<Iterator> *s, Iterator cursor)
 {
     std::size_t diff, offset;
     int skipped = 0;
@@ -187,7 +191,8 @@ int count_backslash_newlines(Scanner *s, uchar *cursor)
     return skipped;
 }
 
-bool is_backslash(uchar *p, uchar *end, int &len)
+template<typename Iterator>
+bool is_backslash(Iterator p, Iterator end, int &len)
 {
     if (*p == '\\') {
         len = 1;
@@ -200,12 +205,14 @@ bool is_backslash(uchar *p, uchar *end, int &len)
     return false;
 }
 
-uchar *fill(Scanner *s, uchar *cursor)
+template<typename Iterator>
+Iterator fill(Scanner<Iterator> *s, Iterator cursor)
 {
     using namespace std;    // some systems have memcpy etc. in namespace std
+    typedef typename std::iterator_traits<Iterator>::value_type uchar;
     if(!s->eof)
     {
-        uchar* p;
+        Iterator p;
         std::ptrdiff_t cnt = s->tok - s->bot;
         if(cnt)
         {
@@ -221,7 +228,7 @@ uchar *fill(Scanner *s, uchar *cursor)
 
         if((s->top - s->lim) < BOOST_WAVE_BSIZE)
         {
-            uchar *buf = (uchar*) malloc(((s->lim - s->bot) + BOOST_WAVE_BSIZE)*sizeof(uchar));
+            Iterator buf = (Iterator) malloc(((s->lim - s->bot) + BOOST_WAVE_BSIZE)*sizeof(uchar));
             if (buf == 0)
             {
                 (*s->error_proc)(s, lexing_exception::unexpected_error,
@@ -368,6 +375,8 @@ uchar *fill(Scanner *s, uchar *cursor)
 //  Special wrapper class holding the current cursor position
 struct uchar_wrapper
 {
+    typedef unsigned char                   uchar;
+
     // traits
     typedef std::ptrdiff_t                  difference_type;
     typedef uchar                           value_type;
@@ -414,8 +423,11 @@ struct uchar_wrapper
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-boost::wave::token_id scan(Scanner *s)
+template<typename Iterator>
+boost::wave::token_id scan(Scanner<Iterator> *s)
 {
+    typedef typename std::iterator_traits<Iterator>::value_type YYCTYPE;
+
     BOOST_ASSERT(0 != s->error_proc);     // error handler must be given
 
     uchar_wrapper cursor (s->tok = s->cur, s->column = s->curr_column);
@@ -432,6 +444,8 @@ boost::wave::token_id scan(Scanner *s)
 
 } /* end of scan */
 
+template boost::wave::token_id scan<unsigned char*>(Scanner<unsigned char*> *);
+
 ///////////////////////////////////////////////////////////////////////////////
 }   // namespace re2clex
 }   // namespace cpplexer
@@ -440,7 +454,6 @@ boost::wave::token_id scan(Scanner *s)
 
 #undef BOOST_WAVE_RET
 #undef BOOST_WAVE_BSIZE
-#undef YYCTYPE
 #undef YYCURSOR
 #undef YYLIMIT
 #undef YYMARKER
