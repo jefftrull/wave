@@ -440,9 +440,9 @@ cppcomment:
 /* this subscanner is called whenever a pp_number has been started */
 pp_number:
 {
-    cursor = uchar_wrapper(s->tok = s->cur, s->column = s->curr_column);
-    marker = uchar_wrapper(s->ptr);
-    limit = uchar_wrapper(s->lim);
+    cursor = uchar_wrapper<unsigned char *>(s->tok = s->cur, s->column = s->curr_column);
+    marker = uchar_wrapper<unsigned char *>(s->ptr);
+    limit = uchar_wrapper<unsigned char *>(s->lim);
 
     if (s->detect_pp_numbers) {
     /*!re2c

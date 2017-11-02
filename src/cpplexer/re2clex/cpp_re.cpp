@@ -69,8 +69,8 @@
 #define YYRESTORECTX() YYCURSOR = YYCTXMARKER
 #define YYFILL(n)                                                             \
     {                                                                         \
-        cursor = uchar_wrapper(fill<unsigned char *>(s, cursor), cursor.column);               \
-        limit = uchar_wrapper (s->lim);                                       \
+        cursor = uchar_wrapper<unsigned char *>(fill<unsigned char *>(s, cursor), cursor.column);               \
+        limit = uchar_wrapper<unsigned char *> (s->lim);                                       \
     }                                                                         \
     /**/
 
@@ -373,53 +373,31 @@ Iterator fill(Scanner<Iterator> *s, Iterator cursor)
 
 ///////////////////////////////////////////////////////////////////////////////
 //  Special wrapper class holding the current cursor position
+template<typename WrappedIterator>
 struct uchar_wrapper
+    : boost::iterator_adaptor<uchar_wrapper<WrappedIterator>,
+                              WrappedIterator>
 {
-    typedef unsigned char                   uchar;
-
-    // traits
-    typedef std::ptrdiff_t                  difference_type;
-    typedef uchar                           value_type;
-    typedef uchar*                          pointer;
-    typedef uchar&                          reference;
-    typedef std::random_access_iterator_tag iterator_category;
-
-    uchar_wrapper (uchar *base_cursor, std::size_t column = 1)
-    :   base_cursor(base_cursor), column(column)
+    uchar_wrapper (WrappedIterator base_cursor, std::size_t column = 1)
+        :   uchar_wrapper::iterator_adaptor_(base_cursor), column(column)
     {}
 
-    uchar_wrapper& operator++()
+    operator WrappedIterator() const
     {
-        ++base_cursor;
-        ++column;
-        return *this;
+        return this->base_reference();
     }
 
-    uchar_wrapper& operator--()
-    {
-        --base_cursor;
-        --column;
-        return *this;
-    }
-
-    uchar operator* () const
-    {
-        return *base_cursor;
-    }
-
-    operator uchar *() const
-    {
-        return base_cursor;
-    }
-
-    friend std::ptrdiff_t
-    operator- (uchar_wrapper const& lhs, uchar_wrapper const& rhs)
-    {
-        return lhs.base_cursor - rhs.base_cursor;
-    }
-
-    uchar *base_cursor;
     std::size_t column;
+
+private:
+    friend class boost::iterator_core_access;
+
+    void increment()
+    {
+        ++this->base_reference();
+        ++column;
+    }
+
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -430,10 +408,10 @@ boost::wave::token_id scan(Scanner<Iterator> *s)
 
     BOOST_ASSERT(0 != s->error_proc);     // error handler must be given
 
-    uchar_wrapper cursor (s->tok = s->cur, s->column = s->curr_column);
-    uchar_wrapper marker (s->ptr);
-    uchar_wrapper ctxmarker (s->ptr);
-    uchar_wrapper limit (s->lim);
+    uchar_wrapper<Iterator> cursor    (s->tok = s->cur, s->column = s->curr_column);
+    uchar_wrapper<Iterator> marker    (s->ptr);
+    uchar_wrapper<Iterator> ctxmarker (s->ptr);
+    uchar_wrapper<Iterator> limit     (s->lim);
 
 // include the correct Re2C token definition rules
 #if BOOST_WAVE_USE_STRICT_LEXER != 0
