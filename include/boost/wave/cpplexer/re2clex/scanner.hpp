@@ -31,7 +31,17 @@ typedef unsigned char uchar;
 typedef int (* ReportErrorProc)(struct Scanner const *, int errorcode,
     char const *, ...);
 
-typedef struct Scanner {
+struct Scanner {
+
+    Scanner()
+        : first(0), act(0), last(0), bot(0), top(0), eof(0),
+          tok(0), ptr(0), cur(0), lim(0),
+          line(0), column(0), curr_column(0), error_proc(0),
+          file_name(0),
+          enable_ms_extensions(false), act_in_c99_mode(false),
+          detect_pp_numbers(false), enable_import_keyword(false),
+          single_line_only(false), act_in_cpp0x_mode(false) {}
+
     uchar* first;   /* start of input buffer */
     uchar* act;     /* act position of input buffer */
     uchar* last;    /* end (one past last char) of input buffer */
@@ -58,7 +68,7 @@ typedef struct Scanner {
     bool enable_import_keyword;  /* recognize import as a keyword */
     bool single_line_only;       /* don't report missing eol's in C++ comments */
     bool act_in_cpp0x_mode;      /* lexer works in C++11 mode */
-} Scanner;
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 }   // namespace re2clex

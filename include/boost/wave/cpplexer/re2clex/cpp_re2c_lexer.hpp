@@ -123,7 +123,6 @@ lexer<IteratorT, PositionT, TokenT>::lexer(IteratorT const &first,
 #endif
 {
     using namespace std;        // some systems have memset in std
-    memset(&scanner, '\0', sizeof(Scanner));
     scanner.eol_offsets = aq_create();
     if (first != last) {
         scanner.first = scanner.act = (uchar *)&(*first);
