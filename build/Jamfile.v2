@@ -28,7 +28,6 @@ SOURCES =
     token_ids
     wave_config_constant
     cpplexer/re2clex/aq
-    cpplexer/re2clex/cpp_re
     ;
 
 lib boost_wave
@@ -46,11 +45,6 @@ for local source in $(SOURCES)
     # workaround for compiler bug
     requirements += <toolset-msvc:version>7.1:<rtti>off ;
     requirements += <toolset-msvc:version>7.1_stlport4:<rtti>off ;
-
-    if $(source) in cpplexer/re2clex/cpp_re
-    {
-        requirements += <warnings>off ;
-    }
 
     if $(source) in instantiate_re2c_lexer instantiate_re2c_lexer_str
     {
