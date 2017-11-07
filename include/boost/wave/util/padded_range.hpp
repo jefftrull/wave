@@ -155,6 +155,10 @@ struct padded_range
         return iterator(this, src_beg_, 0);
     }
 
+    iterator pad_begin() const {
+        return iterator(this, src_end_, 0);
+    }
+
     iterator end() const {
         return iterator(this, src_end_, Count);
     }

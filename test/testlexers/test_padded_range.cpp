@@ -2,7 +2,7 @@
     Boost.Wave: A Standard compliant C++ preprocessor library
     http://www.boost.org/
 
-    Copyright (c) 2001-2012 Hartmut Kaiser. Distributed under the Boost
+    Copyright (c) 2017 Jeffrey E Trull. Distributed under the Boost
     Software License, Version 1.0. (See accompanying file
     LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
@@ -35,6 +35,8 @@ main(int argc, char *argv[])
     BOOST_TEST( (std::distance(vrng.begin(), vrng.end()) ==
                  sizeof(expected_with_padding)/sizeof(int)) &&
                 std::equal(vrng.begin(), vrng.end(), expected_with_padding) );
+    BOOST_TEST( std::distance(vrng.begin(), vrng.pad_begin()) == sizeof(test_data)/sizeof(int) );
+    BOOST_TEST_EQ( std::distance(vrng.pad_begin(), vrng.end()), 10);
 
     // random access (increment by 2)
     std::vector<int> ra_access;
@@ -96,14 +98,22 @@ main(int argc, char *argv[])
     // range with no padding
     padded_range<boost::container::slist<int>::const_iterator, 0, 0> fnp(fwd_list.begin(), fwd_list.end());
     BOOST_TEST( std::distance(fnp.begin(), fnp.end()) == std::distance(fwd_list.begin(), fwd_list.end()));
+    BOOST_TEST( std::distance(fnp.begin(), fnp.pad_begin()) == std::distance(fwd_list.begin(), fwd_list.end()));
+    BOOST_TEST_EQ( std::distance(fnp.pad_begin(), fnp.end()), 0 );
+
 
     // range with padding but no source
     padded_range<boost::container::slist<int>::const_iterator, 7, 5> fns(fwd_list.begin(), fwd_list.begin());
-    BOOST_TEST( std::distance(fns.begin(), fns.end()) == 5 );
+    BOOST_TEST_EQ( std::distance(fns.begin(), fns.end()), 5 );
+    BOOST_TEST_EQ( std::distance(fns.begin(), fns.pad_begin()), 0 );
+    BOOST_TEST_EQ( std::distance(fns.pad_begin(), fns.end()), 5 );
+    
 
     // range with neither (empty)
     padded_range<boost::container::slist<int>::const_iterator, 0, 0> fnn(fwd_list.begin(), fwd_list.begin());
-    BOOST_TEST( std::distance(fnn.begin(), fnn.end()) == 0 );
+    BOOST_TEST_EQ( std::distance(fnn.begin(), fnn.end()), 0 );
+    BOOST_TEST_EQ( std::distance(fnn.pad_begin(), fnn.end()), 0 );
+    BOOST_TEST_EQ( std::distance(fnn.begin(), fnn.pad_begin()), 0 );
 
     return boost::report_errors();
 }
