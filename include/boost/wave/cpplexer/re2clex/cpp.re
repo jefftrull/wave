@@ -278,7 +278,7 @@ NonDigit            = [a-zA-Z_$] | UniversalChar;
             }
             BOOST_WAVE_RET(T_IDENTIFIER);
         }
-   
+
     ([uU] | "u8") / ["]
         {
             if (s->act_in_cpp0x_mode) {
@@ -287,7 +287,7 @@ NonDigit            = [a-zA-Z_$] | UniversalChar;
             }
             BOOST_WAVE_RET(T_IDENTIFIER);
         }
-   
+
     ([uU] | "u8") "R" / ["]
         {
             if (s->act_in_cpp0x_mode) {
