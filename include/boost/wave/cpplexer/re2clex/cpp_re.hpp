@@ -39,57 +39,6 @@ template<typename Iterator> struct Scanner;
 
 #define RE2C_ASSERT BOOST_ASSERT
 
-template<typename Iterator>
-int get_one_char(Scanner<Iterator> *s)
-{
-    if (0 != s->act) {
-        RE2C_ASSERT(s->first != 0 && s->last != 0);
-        RE2C_ASSERT(s->first <= s->act && s->act <= s->last);
-        if (s->act < s->last)
-            return *(s->act)++;
-    }
-    return -1;
-}
-
-template<typename Iterator>
-std::ptrdiff_t rewind_stream (Scanner<Iterator> *s, int cnt)
-{
-    if (0 != s->act) {
-        RE2C_ASSERT(s->first != 0 && s->last != 0);
-        s->act += cnt;
-        RE2C_ASSERT(s->first <= s->act && s->act <= s->last);
-        return s->act - s->first;
-    }
-    return 0;
-}
-
-template<typename Iterator>
-std::size_t get_first_eol_offset(Scanner<Iterator>* s)
-{
-    if (!AQ_EMPTY(s->eol_offsets))
-    {
-        return s->eol_offsets->queue[s->eol_offsets->head];
-    }
-    else
-    {
-        return (unsigned int)-1;
-    }
-}
-
-template<typename Iterator>
-bool is_backslash(Iterator p, Iterator end, int &len)
-{
-    if (*p == '\\') {
-        len = 1;
-        return true;
-    }
-    else if (*p == '?' && *(p+1) == '?' && (p+2 < end && *(p+2) == '/')) {
-        len = 3;
-        return true;
-    }
-    return false;
-}
-
 // macro definitions used by re2c
 
 // aliases for variables local to scan()
