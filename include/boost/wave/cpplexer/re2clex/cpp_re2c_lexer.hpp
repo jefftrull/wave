@@ -28,6 +28,7 @@
 #include <boost/wave/language_support.hpp>
 #include <boost/wave/token_ids.hpp>
 #include <boost/wave/util/file_position.hpp>
+#include <boost/wave/util/padded_range.hpp>
 #include <boost/wave/cpplexer/validate_universal_char.hpp>
 #include <boost/wave/cpplexer/cpplexer_exceptions.hpp>
 #include <boost/wave/cpplexer/token_cache.hpp>
@@ -89,13 +90,16 @@ public:
     }
 #endif
 
+    // here we pick up YYMAXFILL from re2c to know how much to pad by:
+    typedef typename boost::wave::util::padded_range<IteratorT, '\000', YYMAXFILL> padded_range_t;
 // error reporting from the re2c generated lexer
-    static int report_error(Scanner<uchar*> const* s, int code, char const *, ...);
+    static int report_error(Scanner<typename padded_range_t::iterator> const* s, int code, char const *, ...);
 
 private:
     static char const *tok_names[];
 
-    Scanner<uchar*> scanner;
+    padded_range_t                    input_range;
+    Scanner<typename padded_range_t::iterator> scanner;
     string_type filename;
     string_type value;
     bool at_eof;
@@ -118,17 +122,14 @@ inline
 lexer<IteratorT, PositionT, TokenT>::lexer(IteratorT const &first,
         IteratorT const &last, PositionT const &pos,
         boost::wave::language_support language_)
-  : filename(pos.get_file()), at_eof(false), language(language_)
+    : input_range(first, last),
+      scanner(input_range.begin(), input_range.pad_begin(), input_range.end()),
+      filename(pos.get_file()), at_eof(false), language(language_)
 #if BOOST_WAVE_SUPPORT_THREADING != 0
   , cache()
 #endif
 {
     using namespace std;        // some systems have memset in std
-    scanner.eol_offsets = aq_create();
-    if (first != last) {
-        scanner.first = scanner.act = (uchar *)&(*first);
-        scanner.last = scanner.first + std::distance(first, last);
-    }
     scanner.line = pos.get_line();
     scanner.column = scanner.curr_column = pos.get_column();
     scanner.error_proc = report_error;
@@ -163,11 +164,7 @@ lexer<IteratorT, PositionT, TokenT>::lexer(IteratorT const &first,
 template <typename IteratorT, typename PositionT, typename TokenT>
 inline
 lexer<IteratorT, PositionT, TokenT>::~lexer()
-{
-    using namespace std;        // some systems have free in std
-    aq_terminate(scanner.eol_offsets);
-    free(scanner.bot);
-}
+{}
 
 ///////////////////////////////////////////////////////////////////////////////
 //  get the next token from the input stream
@@ -181,11 +178,14 @@ lexer<IteratorT, PositionT, TokenT>::get(TokenT& result)
     std::size_t actline = scanner.line;
     token_id id = token_id(scan(&scanner));
 
+    typedef uchar_wrapper<
+        typename boost::wave::util::padded_range<IteratorT, '\000', YYMAXFILL>::iterator> wrapped_iter_t;
+    value = string_type(wrapped_iter_t(scanner.tok, scanner.eof, scanner.curr_column, scanner.line),
+                        wrapped_iter_t(scanner.cur, scanner.eof, scanner.curr_column, scanner.line));
+
     switch (id) {
     case T_IDENTIFIER:
     // test identifier characters for validity (throws if invalid chars found)
-        value = string_type((char const *)scanner.tok,
-            scanner.cur-scanner.tok);
         if (!boost::wave::need_no_character_validation(language))
             impl::validate_identifier_name(value, actline, scanner.column, filename);
         break;
@@ -194,8 +194,6 @@ lexer<IteratorT, PositionT, TokenT>::get(TokenT& result)
     case T_CHARLIT:
     case T_RAWSTRINGLIT:
     // test literal characters for validity (throws if invalid chars found)
-        value = string_type((char const *)scanner.tok,
-            scanner.cur-scanner.tok);
         if (boost::wave::need_convert_trigraphs(language))
             value = impl::convert_trigraphs(value);
         if (!boost::wave::need_no_character_validation(language))
@@ -208,8 +206,6 @@ lexer<IteratorT, PositionT, TokenT>::get(TokenT& result)
     case T_PP_INCLUDE:
     // convert to the corresponding ..._next token, if appropriate
       {
-          value = string_type((char const *)scanner.tok,
-              scanner.cur-scanner.tok);
 
       // Skip '#' and whitespace and see whether we find an 'include_next' here.
           typename string_type::size_type start = value.find("include");
@@ -220,8 +216,6 @@ lexer<IteratorT, PositionT, TokenT>::get(TokenT& result)
 #endif
 
     case T_LONGINTLIT:  // supported in C++11, C99 and long_long mode
-        value = string_type((char const *)scanner.tok,
-            scanner.cur-scanner.tok);
         if (!boost::wave::need_long_long(language)) {
         // syntax error: not allowed in C++ mode
             BOOST_WAVE_LEXER_THROW(lexing_exception, invalid_long_long_literal,
@@ -241,8 +235,6 @@ lexer<IteratorT, PositionT, TokenT>::get(TokenT& result)
     case T_SPACE2:
     case T_ANY:
     case T_PP_NUMBER:
-        value = string_type((char const *)scanner.tok,
-            scanner.cur-scanner.tok);
         break;
 
     case T_EOF:
@@ -263,31 +255,18 @@ lexer<IteratorT, PositionT, TokenT>::get(TokenT& result)
         if (boost::wave::need_convert_trigraphs(language)) {
             value = cache.get_token_value(BASEID_FROM_TOKEN(id));
         }
-        else {
-            value = string_type((char const *)scanner.tok,
-                scanner.cur-scanner.tok);
-        }
         break;
 
     case T_ANY_TRIGRAPH:
         if (boost::wave::need_convert_trigraphs(language)) {
-            value = impl::convert_trigraph(
-                string_type((char const *)scanner.tok));
-        }
-        else {
-            value = string_type((char const *)scanner.tok,
-                scanner.cur-scanner.tok);
+            value = impl::convert_trigraph(value);
         }
         break;
 
     default:
-        if (CATEGORY_FROM_TOKEN(id) != EXTCATEGORY_FROM_TOKEN(id) ||
-            IS_CATEGORY(id, UnknownTokenType))
+        if (!(CATEGORY_FROM_TOKEN(id) != EXTCATEGORY_FROM_TOKEN(id) ||
+              IS_CATEGORY(id, UnknownTokenType)))
         {
-            value = string_type((char const *)scanner.tok,
-                scanner.cur-scanner.tok);
-        }
-        else {
             value = cache.get_token_value(id);
         }
         break;
@@ -307,7 +286,7 @@ lexer<IteratorT, PositionT, TokenT>::get(TokenT& result)
 
 template <typename IteratorT, typename PositionT, typename TokenT>
 inline int
-lexer<IteratorT, PositionT, TokenT>::report_error(Scanner<uchar*> const *s, int errcode,
+lexer<IteratorT, PositionT, TokenT>::report_error(Scanner<typename padded_range_t::iterator> const *s, int errcode,
     char const *msg, ...)
 {
     BOOST_ASSERT(0 != s);

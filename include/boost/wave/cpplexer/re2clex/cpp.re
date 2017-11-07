@@ -15,7 +15,13 @@
         handle errors better.
 =============================================================================*/
 
+// emit YYMAXFILL definition
+/*!max:re2c*/
+
 /*!re2c
+re2c:yyfill:check = 0;
+re2c:yyfill:enable = 0;
+
 re2c:indent:string  = "    "; 
 any                 = [\t\v\f\r\n\040-\377];
 anyctrl             = [\001-\037];
@@ -332,7 +338,7 @@ NonDigit            = [a-zA-Z_$] | UniversalChar;
 
     "\000"
     {
-        if (s->eof && cursor != s->eof) 
+        if (cursor != s->eof)
         {
             BOOST_WAVE_UPDATE_CURSOR();     // adjust the input cursor
             (*s->error_proc)(s, lexing_exception::generic_lexing_error,
@@ -360,7 +366,7 @@ ccomment:
     {
         /*if(cursor == s->eof) BOOST_WAVE_RET(T_EOF);*/
         /*s->tok = cursor; */
-        s->line += count_backslash_newlines<Iterator>(s, cursor) +1;
+        s->line = cursor.line;
         cursor.column = 1;
         goto ccomment;
     }
@@ -370,7 +376,7 @@ ccomment:
     "" / "\000"
     {
 
-        if(++(YYCURSOR) == s->eof)
+        if(++(uchar_wrapper<Iterator>(YYCURSOR)) == s->eof)
         {
             // point to EOF
             ++YYCURSOR;
@@ -411,7 +417,7 @@ cppcomment:
 
     "" / "\000"
     {
-        if (s->eof && ++(YYCURSOR) != s->eof)
+        if (++(uchar_wrapper<Iterator>(YYCURSOR)) != s->eof)
         {
                                             // next call returns T_EOF
             BOOST_WAVE_UPDATE_CURSOR();     // adjust the input cursor
@@ -440,9 +446,10 @@ cppcomment:
 /* this subscanner is called whenever a pp_number has been started */
 pp_number:
 {
-    cursor = uchar_wrapper<unsigned char *>(s->tok = s->cur, s->column = s->curr_column);
-    marker = uchar_wrapper<unsigned char *>(s->ptr);
-    limit = uchar_wrapper<unsigned char *>(s->lim);
+    cursor = uchar_wrapper<Iterator>(s->tok = s->cur, s->eof,
+                                            s->column = s->curr_column, s->line);
+    marker = uchar_wrapper<Iterator>(s->ptr, s->eof);
+    limit = uchar_wrapper<Iterator>(s->lim, s->eof);
 
     if (s->detect_pp_numbers) {
     /*!re2c
@@ -517,7 +524,7 @@ extrawstringlit:
 
         Newline
         {
-            s->line += count_backslash_newlines<Iterator>(s, cursor) +1;
+            s->line = cursor.line;
             cursor.column = 1;
             goto extrawstringlit;
         }

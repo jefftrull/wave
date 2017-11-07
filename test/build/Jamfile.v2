@@ -176,3 +176,12 @@ unit-test padded_range
     # requirements
     :
     ;
+
+unit-test uchar_wrapper
+    # sources
+    :
+        ../testlexers/test_uchar_wrapper.cpp
+        /boost/wave//boost_wave
+    # requirements
+    :
+    ;

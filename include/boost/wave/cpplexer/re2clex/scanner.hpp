@@ -13,7 +13,6 @@
 #define SCANNER_HPP_F4FB01EB_E75C_4537_A146_D34B9895EF37_INCLUDED
 
 #include <boost/wave/wave_config.hpp>
-#include <boost/wave/cpplexer/re2clex/aq.hpp>
 
 // this must occur after all of the includes and before any code appears
 #ifdef BOOST_HAS_ABI_HEADERS
@@ -32,20 +31,15 @@ template<typename Iterator>
 struct Scanner {
     typedef int (* ReportErrorProc)(struct Scanner const *, int errorcode,
                                     char const *, ...);
-    Scanner()
-        : first(0), act(0), last(0), bot(0), top(0), eof(0),
-          tok(0), ptr(0), cur(0), lim(0),
+    Scanner(Iterator beg, Iterator eoi, Iterator end)
+        : eof(++eoi), // EOF pointer is one char into the padding
+          tok(beg), ptr(beg), cur(beg), lim(end),
           line(0), column(0), curr_column(0), error_proc(0),
           file_name(0),
           enable_ms_extensions(false), act_in_c99_mode(false),
           detect_pp_numbers(false), enable_import_keyword(false),
           single_line_only(false), act_in_cpp0x_mode(false) {}
 
-    Iterator first;   /* start of input buffer */
-    Iterator act;     /* act position of input buffer */
-    Iterator last;    /* end (one past last char) of input buffer */
-    Iterator bot;     /* beginning of the current buffer */
-    Iterator top;     /* top of the current buffer */
     Iterator eof;     /* when we read in the last buffer, will point 1 past the
                          end of the file, otherwise 0 */
     Iterator tok;     /* points to the beginning of the current token */
@@ -60,7 +54,6 @@ struct Scanner {
     ReportErrorProc error_proc; /* must be != 0, this function is called to
                                    report an error */
     char const *file_name;      /* name of the lex'ed file */
-    aq_queue eol_offsets;
     bool enable_ms_extensions;   /* enable MS extensions */
     bool act_in_c99_mode;        /* lexer works in C99 mode */
     bool detect_pp_numbers;      /* lexer should prefer to detect pp-numbers */
