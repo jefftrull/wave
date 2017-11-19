@@ -26,12 +26,15 @@ namespace wave {
 namespace cpplexer {
 namespace re2clex {
 
+template<typename Iterator>
 struct Scanner;
 typedef unsigned char uchar;
-typedef int (* ReportErrorProc)(struct Scanner const *, int errorcode,
-    char const *, ...);
 
-typedef struct Scanner {
+template<typename Iterator>
+struct Scanner {
+    typedef int (* ReportErrorProc)(struct Scanner const *, int errorcode,
+        char const *, ...);
+
     uchar* first;   /* start of input buffer */
     uchar* act;     /* act position of input buffer */
     uchar* last;    /* end (one past last char) of input buffer */
@@ -58,7 +61,7 @@ typedef struct Scanner {
     bool enable_import_keyword;  /* recognize import as a keyword */
     bool single_line_only;       /* don't report missing eol's in C++ comments */
     bool act_in_cpp0x_mode;      /* lexer works in C++11 mode */
-} Scanner;
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 }   // namespace re2clex

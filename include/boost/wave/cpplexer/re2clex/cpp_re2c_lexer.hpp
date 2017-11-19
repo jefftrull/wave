@@ -89,12 +89,12 @@ public:
 #endif
 
 // error reporting from the re2c generated lexer
-    static int report_error(Scanner const* s, int code, char const *, ...);
+    static int report_error(Scanner<uchar *> const* s, int code, char const *, ...);
 
 private:
     static char const *tok_names[];
 
-    Scanner scanner;
+    Scanner<uchar *> scanner;
     string_type filename;
     string_type value;
     bool at_eof;
@@ -123,7 +123,7 @@ lexer<IteratorT, PositionT, TokenT>::lexer(IteratorT const &first,
 #endif
 {
     using namespace std;        // some systems have memset in std
-    memset(&scanner, '\0', sizeof(Scanner));
+    memset(&scanner, '\0', sizeof(Scanner<uchar *>));
     scanner.eol_offsets = aq_create();
     if (first != last) {
         scanner.first = scanner.act = (uchar *)&(*first);
@@ -307,7 +307,7 @@ lexer<IteratorT, PositionT, TokenT>::get(TokenT& result)
 
 template <typename IteratorT, typename PositionT, typename TokenT>
 inline int
-lexer<IteratorT, PositionT, TokenT>::report_error(Scanner const *s, int errcode,
+lexer<IteratorT, PositionT, TokenT>::report_error(Scanner<uchar *> const *s, int errcode,
     char const *msg, ...)
 {
     BOOST_ASSERT(0 != s);
