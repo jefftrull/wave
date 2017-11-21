@@ -90,8 +90,8 @@ BOOST_WAVE_DECL boost::wave::token_id scan(Scanner<Iterator> *s);
 template<typename Iterator>
 int get_one_char(Scanner<Iterator> *s)
 {
-    if (0 != s->act) {
-        RE2C_ASSERT(s->first != 0 && s->last != 0);
+    if (Iterator() != s->act) {
+        RE2C_ASSERT(s->first != Iterator() && s->last != Iterator());
         RE2C_ASSERT(s->first <= s->act && s->act <= s->last);
         if (s->act < s->last)
             return *(s->act)++;
@@ -102,8 +102,8 @@ int get_one_char(Scanner<Iterator> *s)
 template<typename Iterator>
 std::ptrdiff_t rewind_stream (Scanner<Iterator> *s, int cnt)
 {
-    if (0 != s->act) {
-        RE2C_ASSERT(s->first != 0 && s->last != 0);
+    if (Iterator() != s->act) {
+        RE2C_ASSERT(s->first != Iterator() && s->last != Iterator());
         s->act += cnt;
         RE2C_ASSERT(s->first <= s->act && s->act <= s->last);
         return s->act - s->first;
@@ -219,12 +219,11 @@ uchar *fill(Scanner<Iterator> *s, uchar *cursor)
             s->bot = buf;
         }
 
-        // BOZO the only place "act" is ever used is this if block:
-        if (s->act != 0) {
+        if (s->act != Iterator(0)) {
             cnt = s->last - s->act;
             if (cnt > BOOST_WAVE_BSIZE)
                 cnt = BOOST_WAVE_BSIZE;
-            memmove(s->lim, s->act, cnt);
+            std::copy_n(s->act, cnt, s->lim);
             s->act += cnt;
             if (cnt != BOOST_WAVE_BSIZE)
             {
