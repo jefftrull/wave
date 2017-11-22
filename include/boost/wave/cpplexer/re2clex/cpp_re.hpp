@@ -223,8 +223,12 @@ uchar *fill(Scanner<Iterator> *s, uchar *cursor)
             cnt = std::distance(s->act, s->last);
             if (cnt > BOOST_WAVE_BSIZE)
                 cnt = BOOST_WAVE_BSIZE;
-            std::copy_n(s->act, cnt, s->lim);
-            std::advance(s->act, cnt);
+            uchar * dst = s->lim;
+            for (std::ptrdiff_t idx = 0; idx < cnt; ++idx)
+            {
+                *dst++ = *s->act++;
+            }
+
             if (cnt != BOOST_WAVE_BSIZE)
             {
                 s->eof = &s->lim[cnt]; *(s->eof)++ = '\0';
