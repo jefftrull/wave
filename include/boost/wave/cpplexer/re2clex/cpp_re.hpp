@@ -104,9 +104,9 @@ std::ptrdiff_t rewind_stream (Scanner<Iterator> *s, int cnt)
 {
     if (Iterator() != s->act) {
         RE2C_ASSERT(s->first != Iterator() && s->last != Iterator());
-        s->act += cnt;
+        std::advance(s->act, cnt);
         RE2C_ASSERT(s->first <= s->act && s->act <= s->last);
-        return s->act - s->first;
+        return std::distance(s->first, s->act);
     }
     return 0;
 }
@@ -219,12 +219,12 @@ uchar *fill(Scanner<Iterator> *s, uchar *cursor)
             s->bot = buf;
         }
 
-        if (s->act != Iterator(0)) {
-            cnt = s->last - s->act;
+        if (s->act != Iterator()) {
+            cnt = std::distance(s->act, s->last);
             if (cnt > BOOST_WAVE_BSIZE)
                 cnt = BOOST_WAVE_BSIZE;
             std::copy_n(s->act, cnt, s->lim);
-            s->act += cnt;
+            std::advance(s->act, cnt);
             if (cnt != BOOST_WAVE_BSIZE)
             {
                 s->eof = &s->lim[cnt]; *(s->eof)++ = '\0';
