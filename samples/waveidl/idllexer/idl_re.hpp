@@ -23,8 +23,9 @@ namespace re2clex {
 
 ///////////////////////////////////////////////////////////////////////////////
 //  The scanner function to call whenever a new token is requested
-boost::wave::token_id scan(
-    boost::wave::cpplexer::re2clex::Scanner *s);
+template<typename Iterator>
+BOOST_WAVE_DECL boost::wave::token_id scan(
+    boost::wave::cpplexer::re2clex::Scanner<Iterator> *s);
 
 ///////////////////////////////////////////////////////////////////////////////
 }   // namespace re2clex
