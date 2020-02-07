@@ -81,6 +81,8 @@ install:
 
 script:
   - ./b2 libs/wave/test toolset=$TOOLSET cxxstd=$CXXSTD
+  - ./b2 libs/wave/tool/build toolset=$TOOLSET cxxstd=$CXXSTD
+  - ./b2 libs/wave/samples toolset=$TOOLSET cxxstd=$CXXSTD
 
 notifications:
   email:
