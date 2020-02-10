@@ -54,7 +54,7 @@ install:
   - git submodule update --init libs/config
   - git submodule update --init tools/boostdep
   - xcopy /s /e /q %APPVEYOR_BUILD_FOLDER% libs\wave
-  - python tools/boostdep/depinst/depinst.py wave
+  - python tools/boostdep/depinst/depinst.py -I tool wave
   - cmd /c bootstrap
   - b2 -d0 headers
 
