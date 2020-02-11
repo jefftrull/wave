@@ -22,7 +22,7 @@ exe waveidl
     :
         $(SOURCES)
         /boost/wave//boost_wave
-        /boost/program_options//boost_program_options
+        /boost/program_options//boost_program_options/<link>static
         /boost/system//boost_system
         /boost/thread//boost_thread
         /boost/date_time//boost_date_time
@@ -32,8 +32,6 @@ exe waveidl
 for local source in $(SOURCES)
 {
     local requirements ;
-    requirements += <link>shared:<define>BOOST_ALL_DYN_LINK=1 ;
-    requirements += <link>static:<define>BOOST_THREAD_USE_LIB=1 ;
     # workaround for compiler bug
     requirements += <toolset-msvc:version>7.1:<rtti>off ;
     requirements += <toolset-msvc:version>7.1_stlport4:<rtti>off ;
