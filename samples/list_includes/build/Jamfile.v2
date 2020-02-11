@@ -31,8 +31,8 @@ exe list_includes
 for local source in $(SOURCES)
 {
     local requirements ;
-    <link>shared:<define>BOOST_ALL_DYN_LINK=1
-    <link>static:<define>BOOST_THREAD_USE_LIB=1
+    requirements += <link>shared:<define>BOOST_ALL_DYN_LINK=1 ;
+    requirements += <link>static:<define>BOOST_THREAD_USE_LIB=1 ;
     # workaround for compiler bug
     requirements += <toolset-msvc:version>7.1:<rtti>off ; 
     requirements += <toolset-msvc:version>7.1_stlport4:<rtti>off ; 
