@@ -11,47 +11,18 @@
 #define STOP_WATCH_HPP_HK040911_INCLUDED
 
 #include <boost/config.hpp>
-#include <boost/timer.hpp>
+#include <boost/timer/timer.hpp>
 
 ///////////////////////////////////////////////////////////////////////////////
 //  
-class stop_watch : public boost::timer {
+class stop_watch : public boost::timer::cpu_timer {
 
-    typedef boost::timer base_t;
+    typedef boost::timer::cpu_timer base_t;
     
 public:
-    stop_watch() : is_suspended_since(0), suspended_overall(0) {}
-
-    void suspend()
-    {
-        if (0 == is_suspended_since) {
-        // if not already suspended
-            is_suspended_since = this->base_t::elapsed();
-        }
-    }
-    void resume()
-    {
-        if (0 != is_suspended_since) {
-        // if really suspended
-            suspended_overall += this->base_t::elapsed() - is_suspended_since;
-            is_suspended_since = 0;
-        }
-    }
-    double elapsed() const
-    {
-        if (0 == is_suspended_since) {
-        // currently running
-            return this->base_t::elapsed() - suspended_overall;
-        }
-
-    // currently suspended
-        BOOST_ASSERT(is_suspended_since >= suspended_overall);
-        return is_suspended_since - suspended_overall;
-    }
-    
     std::string format_elapsed_time() const
     {
-    double current = elapsed();
+    double current = elapsed().user / 1.e9;
     char time_buffer[sizeof("1234:56:78.90 abcd.")+1];
 
         using namespace std;
@@ -75,10 +46,6 @@ public:
         }
         return time_buffer;
     }
-    
-private:
-    double is_suspended_since;
-    double suspended_overall; 
 };
 
 #endif // !defined(STOP_WATCH_HPP_HK040911_INCLUDED)

@@ -1207,9 +1207,7 @@ protected:
         using namespace boost::wave;
 
         typedef typename ContextT::token_type token_type;
-        typedef typename token_type::string_type string_type;
         typedef typename ContainerT::const_iterator const_iterator;
-        typedef typename ContainerT::iterator iterator;
 
         token_type* current = 0;
 
@@ -1438,7 +1436,7 @@ protected:
     {
         if (value.get_value() == "0" || value.get_value() == "restart") {
         // restart the timer
-            elapsed_time.restart();
+            elapsed_time.start();
         }
         else if (value.get_value() == "1") {
         // print out the current elapsed time
@@ -1449,7 +1447,7 @@ protected:
         }
         else if (value.get_value() == "suspend") {
         // suspend the timer
-            elapsed_time.suspend();
+            elapsed_time.stop();
         }
         else if (value.get_value() == "resume") {
         // resume the timer
