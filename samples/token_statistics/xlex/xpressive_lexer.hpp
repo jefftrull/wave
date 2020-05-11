@@ -20,7 +20,6 @@
 #include <algorithm>
 
 #include <boost/xpressive/xpressive.hpp>
-#include <boost/iterator/iterator_traits.hpp>
 
 namespace boost {
 namespace wave {
@@ -37,7 +36,7 @@ template <
 class xpressive_lexer
 {
 private:
-    typedef typename boost::iterators::iterator_value<Iterator>::type
+    typedef typename std::iterator_traits<Iterator>::value_type
         char_type;
     typedef std::basic_string<char_type> string_type;
     
