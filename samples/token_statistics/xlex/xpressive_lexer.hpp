@@ -16,10 +16,11 @@
 #include <string>
 #include <vector>
 #include <utility>
+#include <iterator>
 #include <algorithm>
 
-#include <boost/detail/iterator.hpp>
 #include <boost/xpressive/xpressive.hpp>
+#include <boost/iterator/iterator_traits.hpp>
 
 namespace boost {
 namespace wave {
