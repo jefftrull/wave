@@ -76,7 +76,7 @@ install:
   - git submodule update --init libs/config
   - git submodule update --init tools/boostdep
   - cp -r $TRAVIS_BUILD_DIR/* libs/wave
-  - git submodule update libs/xpressive
+  - git submodule update --init libs/xpressive
   - python tools/boostdep/depinst/depinst.py -v -v -v -I tool -I samples wave
   - ./bootstrap.sh
   - ./b2 headers
