@@ -24,27 +24,30 @@ environment:
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
       TOOLSET: msvc-14.2
       CXXSTD: 14,17
-##
-## cygwin and mingw disabled for now, failing to build
-## for reasons unrelated to wave
-##
-#    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
-#      ADDPATH: C:\cygwin\bin;
-#      TOOLSET: gcc
-#      CXXSTD: 11,14,1z
-#    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
-#      ADDPATH: C:\cygwin64\bin;
-#      TOOLSET: gcc
-#      CXXSTD: 11,14,1z
-#    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
-#      ADDPATH: C:\mingw\bin;
-#      TOOLSET: gcc
-#      CXXSTD: 11,14,1z
-#    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
-#      ADDPATH: C:\mingw-w64\x86_64-6.3.0-posix-seh-rt_v5-rev1\mingw64\bin;
-#      TOOLSET: gcc
-#      CXXSTD: 11,14,1z
-
+    - TOOLSET: clang-win
+      ADDRMD: 32,64
+      CXXSTD: 14,17
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+    - TOOLSET: gcc
+      CXXSTD: 03,11,14,1z
+      ADDPATH: C:\cygwin\bin;
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+    - TOOLSET: gcc
+      CXXSTD: 03,11,14,1z
+      ADDPATH: C:\cygwin64\bin;
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+    - TOOLSET: gcc
+      CXXSTD: 03,11,14,1z
+      ADDPATH: C:\mingw\bin;
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+    - TOOLSET: gcc
+      CXXSTD: 03,11,14,1z
+      ADDPATH: C:\mingw-w64\x86_64-6.3.0-posix-seh-rt_v5-rev1\mingw64\bin;
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+    - TOOLSET: gcc
+      CXXSTD: 03,11,14,1z
+      ADDPATH: C:\mingw-w64\x86_64-7.3.0-posix-seh-rt_v5-rev0\mingw64\bin;
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
 install:
   - set BOOST_BRANCH=develop
   - if "%APPVEYOR_REPO_BRANCH%" == "master" set BOOST_BRANCH=master
